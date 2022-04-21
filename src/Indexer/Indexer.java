@@ -3,19 +3,27 @@ package Indexer;
 import gr.uoc.csd.hy463.NXMLFileReader;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 
 public class Indexer {
 
     public HashMap<String, HashMap<String, Integer>> memoryStorage;
+    public ArrayList<String> stopWords;
 
     public Indexer() {
         memoryStorage = new HashMap<String, HashMap<String, Integer>>();
+        stopWords = new ArrayList<String>();
+        loadStopWords();
+        for(int i =0; i<stopWords.size(); i++) {
+        	System.out.println(stopWords.get(i));
+        }
     }
 
     public void makeTokens(String content, String tag) {
@@ -24,8 +32,33 @@ public class Indexer {
     	StringTokenizer tokenizer = new StringTokenizer(content, delimiter);
     	while(tokenizer.hasMoreTokens() ) {
     		String currentToken = tokenizer.nextToken(); 
-    		System.out.println(currentToken);
+    		//System.out.println(currentToken);
     	}
+    	
+    }
+    
+    public void loadStopWords() {
+    	
+    	try {
+    	      File english = new File("3_Resources_Stoplists/stopwordsEn.txt");
+    	      File greek = new File("3_Resources_Stoplists/stopwordsGr.txt");
+    	      Scanner myReaderEn = new Scanner(english);
+    	      Scanner myReaderGr = new Scanner(greek);
+    	      while (myReaderEn.hasNextLine()) {
+    	        String data = myReaderEn.nextLine();
+    	        stopWords.add(data);
+    	      }
+    	      myReaderEn.close();
+    	      while (myReaderGr.hasNextLine()) {
+      	        String data = myReaderGr.nextLine();
+      	        stopWords.add(data);
+      	      }
+    	      myReaderGr.close();
+    	    } catch (FileNotFoundException e) {
+    	      System.out.println("An error occurred.");
+    	      e.printStackTrace();
+    	    }
+    	
     	
     }
 
