@@ -401,7 +401,8 @@ public class IRQualityEvaluator extends JFrame {
 											line.indexOf("-", line.indexOf("-") + 1) - 1));
 									String[] positions = tfd.split(",");
 									ArrayList<String> sl = new ArrayList(Arrays.asList(positions));
-									String documentNumber = line.substring(line.indexOf("documentPointer:") + 16);
+									String documentNumber = line.substring(line.lastIndexOf(":")+1);
+									System.out.println(line.substring(line.lastIndexOf(":")+1));
 
 									readerDocument.seek(Integer.parseInt(documentNumber));
 									String documentLine = readerDocument.readLine();
