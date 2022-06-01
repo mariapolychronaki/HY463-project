@@ -49,7 +49,7 @@ public class Indexer extends JFrame {
 	public TreeMap<String, Integer> documentsList;
 	public TreeMap<String, TreeMap<String, ArrayList<Integer>>> positions;
 	public static final DecimalFormat df = new DecimalFormat("0.000");
-	public String documentsName,outputName;
+	public String documentsName, outputName;
 
 	public JFileChooser jfc;
 	public JMenuBar jb;
@@ -178,9 +178,10 @@ public class Indexer extends JFrame {
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					System.out.println("getCurrentDirectory(): " + chooser.getCurrentDirectory());
 					System.out.println("getSelectedFile() : " + chooser.getSelectedFile());
-					String directoryName=chooser.getSelectedFile().getAbsolutePath().replace(new java.io.File("").getAbsolutePath(),"");
+					String directoryName = chooser.getSelectedFile().getAbsolutePath()
+							.replace(new java.io.File("").getAbsolutePath(), "");
 					documentFolder.setText(chooser.getSelectedFile().getAbsolutePath());
-					documentsName=directoryName.substring(directoryName.indexOf("/")+1);
+					documentsName = directoryName.substring(directoryName.indexOf("/") + 1);
 				} else {
 					System.out.println("No Selection ");
 				}
@@ -205,9 +206,10 @@ public class Indexer extends JFrame {
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					System.out.println("getCurrentDirectory(): " + chooser.getCurrentDirectory());
 					System.out.println("getSelectedFile() : " + chooser.getSelectedFile());
-					String directoryName=chooser.getSelectedFile().getAbsolutePath().replace(new java.io.File("").getAbsolutePath(),"");
+					String directoryName = chooser.getSelectedFile().getAbsolutePath()
+							.replace(new java.io.File("").getAbsolutePath(), "");
 					outputFolder.setText(chooser.getSelectedFile().getAbsolutePath());
-					outputName=directoryName.substring(directoryName.indexOf("/")+1);
+					outputName = directoryName.substring(directoryName.indexOf("/") + 1);
 					log.setText("Initialising Stemmer\n\nCreating Stopwords list\n\n");
 				} else {
 					System.out.println("No Selection ");
@@ -230,7 +232,7 @@ public class Indexer extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				log.setText("Starting Indexing...\n");
 				long startTime = System.currentTimeMillis();
-				
+
 				listFilesForFolder(new File(documentsName));
 				try {
 					writeToFile();
@@ -243,7 +245,8 @@ public class Indexer extends JFrame {
 					e1.printStackTrace();
 				}
 				long estimatedTime = System.currentTimeMillis() - startTime;
-				log.setText(log.getText()+"\n\nIndexing completed! Time elapsed: "+(estimatedTime/1000)+" seconds");
+				log.setText(
+						log.getText() + "\n\nIndexing completed! Time elapsed: " + (estimatedTime / 1000) + " seconds");
 			}
 
 		});
@@ -297,7 +300,7 @@ public class Indexer extends JFrame {
 	}
 
 	public void listFilesForFolder(File folder) {
-		this.log.setText(this.log.getText()+"\nDirectory: "+folder.getAbsolutePath());
+		this.log.setText(this.log.getText() + "\nDirectory: " + folder.getAbsolutePath());
 		for (File fileEntry : folder.listFiles()) {
 			if (fileEntry.isDirectory()) {
 				listFilesForFolder(fileEntry);
@@ -326,7 +329,7 @@ public class Indexer extends JFrame {
 	}
 
 	public void calculateNorm() throws FileNotFoundException, UnsupportedEncodingException {
-		PrintWriter writer = new PrintWriter(outputName+"/DocumentsFile.txt", "UTF-8");
+		PrintWriter writer = new PrintWriter(outputName + "/DocumentsFile.txt", "UTF-8");
 
 		documentsList.entrySet().forEach(document -> {
 			memoryStorage.entrySet().forEach(entry -> {
@@ -430,8 +433,8 @@ public class Indexer extends JFrame {
 		}
 		String[] fileArray = null;
 
-		RandomAccessFile file = new RandomAccessFile(outputName+"/PostingFile.txt", "rw");
-		RandomAccessFile documentFile = new RandomAccessFile(outputName+"/DocumentsFile.txt", "rw");
+		RandomAccessFile file = new RandomAccessFile(outputName + "/PostingFile.txt", "rw");
+		RandomAccessFile documentFile = new RandomAccessFile(outputName + "/DocumentsFile.txt", "rw");
 		try {
 			file.seek(0);
 			documentFile.seek(0);
@@ -440,7 +443,11 @@ public class Indexer extends JFrame {
 
 			String fileString = new String(array);
 
-			fileArray = fileString.split("\\s");
+			fileArray = fileString.split("\\r?\\n");
+
+			for (int i = 0; i < fileArray.length; i++) {
+				// System.out.println(fileArray[i]);
+			}
 
 			documentFile.close();
 
@@ -452,7 +459,7 @@ public class Indexer extends JFrame {
 		ArrayList<Map.Entry<String, Integer>> entryList = new ArrayList<Map.Entry<String, Integer>>(
 				documentsList.entrySet());
 
-		PrintWriter writer = new PrintWriter(outputName+"/VocabularyFile.txt", "UTF-8");
+		PrintWriter writer = new PrintWriter(outputName + "/VocabularyFile.txt", "UTF-8");
 		DecimalFormat df = new DecimalFormat("0.000");
 		final String temp_array[] = fileArray;
 		memoryStorage.entrySet().forEach(entry -> {
@@ -479,25 +486,25 @@ public class Indexer extends JFrame {
 				}
 				ArrayList temp = positions.get(entry.getKey()).get(document.getKey());
 				double tf = temp.size() / (double) entryList.get(index[0]).getValue();
-				line = line + index[0] + " - " + df.format(tf) + " - [";
+				try {
+					file.writeBytes(index[0] + " - " + df.format(tf) + " - [");
 
-				for (int i = 0; i < temp.size(); i++) {
-					line = line + temp.get(i) + ",";
-				}
+					for (int i = 0; i < temp.size(); i++) {
+						file.writeBytes(temp.get(i) + ",");
+					}
 
-				int bytes_counter[] = { 0 };
-				for (int i = 0; i < temp_array.length; i++) {
-					if (temp_array[i].equals(String.valueOf(index[0]))) {
-
-						for (int j = 0; j < i; j++) {
-							bytes_counter[0] = bytes_counter[0] + temp_array[j].length();
+					int bytes_counter[] = { 0 };
+					for (int i = 0; i < temp_array.length; i++) {
+						if (temp_array[i].substring(0, temp_array[i].indexOf(" -")).equals(String.valueOf(index[0]))) {
+							// System.out.println(temp_array[i].substring(0,temp_array[i].indexOf(" -")));
+							for (int j = 0; j < i; j++) {
+								System.out.println(temp_array[j]+" "+bytes_counter[0]);
+								bytes_counter[0] = bytes_counter[0] + temp_array[j].length()+1;
+							}
 						}
 					}
-				}
 
-				line = line + "] - documentPointer:" + bytes_counter[0] + "\n";
-				try {
-					file.write(line.getBytes());
+					file.writeBytes("] - documentPointer:" + bytes_counter[0] + "\n");
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
